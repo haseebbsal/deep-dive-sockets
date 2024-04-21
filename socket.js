@@ -31,7 +31,6 @@ io.on('connection', (socket) => {
             }
         }
         catch(e){
-            console.log(e)
             console.log('error in checking session on disconnect')
         }
         const pageurl = socket.handshake.query.pageUrl
@@ -42,16 +41,18 @@ io.on('connection', (socket) => {
                 console.log('Error in finding Navigaton')
             }
             else {
-                if (!results.rows[0].isnavigated) {
-                    console.log('completed session because there was no navigation')
-                    await client.query(`UPDATE sessionplayer SET completed=true WHERE sessionid = $1`,[sessionid])
-                }
-                else {
-                    if (results.rows[0].isnavigated == pageurl) {
-                        console.log('click to navigate', results.rows[0].clicktonavigate)
-                        if (!results.rows[0].clicktonavigate) {
-                            console.log('completed session because there was no navigation after we navigated')
-                            await client.query(`UPDATE sessionplayer SET completed=true WHERE sessionid = $1`, [sessionid])
+                if (results.rows.length > 0) {
+                    if (!results.rows[0].isnavigated) {
+                        console.log('completed session because there was no navigation')
+                        await client.query(`UPDATE sessionplayer SET completed=true WHERE sessionid = $1`, [sessionid])
+                    }
+                    else {
+                        if (results.rows[0].isnavigated == pageurl) {
+                            console.log('click to navigate', results.rows[0].clicktonavigate)
+                            if (!results.rows[0].clicktonavigate) {
+                                console.log('completed session because there was no navigation after we navigated')
+                                await client.query(`UPDATE sessionplayer SET completed=true WHERE sessionid = $1`, [sessionid])
+                            }
                         }
                     }
                 }
