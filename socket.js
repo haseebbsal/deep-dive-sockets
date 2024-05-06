@@ -25,12 +25,16 @@ io.on('connection', (socket) => {
         let sessionid = socket.handshake.query.sessionid == 'null' ? socket.id : socket.handshake.query.sessionid
         try {
             const checkingSession = await client.query('SELECT * FROM sessionplayer where sessionid=$1', [sessionid])
-            if (checkingSession.rows[0].completed) {
-                console.log('session is completed so gonna use socket id that is created from server')
-                sessionid = socket.id
+            if (checkingSession.rows.length > 0) {
+                if (checkingSession.rows[0].completed) {
+                    console.log('session is completed so gonna use socket id that is created from server')
+                    sessionid = socket.id
+                }
             }
+            
         }
         catch(e){
+            console.log(e)
             console.log('error in checking session on disconnect')
         }
         const pageurl = socket.handshake.query.pageUrl
@@ -185,6 +189,7 @@ io.on('connection', (socket) => {
                                     }
                                     else {
                                         console.log('session id doesnt exist in the table')
+                                        await client.query('INSERT INTO sessionplayer(userid, domain,sessionid) VALUES($1, $2,$3)', [msg.userId, msg.domain, socket.id])
                                         socket.emit('serverDomainVerification', { isverified: selectResults.rows[0].isverified, sessionid: socket.id })
                                     }
                                 }
