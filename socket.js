@@ -84,19 +84,7 @@ io.on('connection', (socket) => {
     });
 
 
-    socket.on('navigationOnUrl', async (msg) => {
-        console.log('im hereeeeeeeeex')
-        const queryUpdate = `UPDATE sessionplayer SET isnavigated=$2  WHERE sessionid = $1`
-        client.query(queryUpdate, [msg.sessionid, msg.url], (error, results) => {
-            if (error) {
-                console.error('Error updating sessionplayer data:', error);
-            } else {
-                console.log(`updated Navigation in session to ${msg.url}`)
-            }
-        });
-        // await client.query(`UPDATE sessionplayer SET clicktonavigate=true WHERE sessionid = $1`, [msg])
-        // console.log('clicktonavigate is set to true because we navigated to same page in non SPA')
-    })
+   
 
     socket.on('on-click', async (msg) => {
         console.log('type', msg.type)
@@ -127,10 +115,7 @@ io.on('connection', (socket) => {
         insertClickOrUpdateData(clickData);
     });
 
-    socket.on('blurring', () => {
-        console.log(socket.handshake.auth)
-    })
-
+   
 
     socket.on('AddDomain', (msg) => {
         let updateValues = [msg.userId, msg.domain];
@@ -222,11 +207,10 @@ io.on('connection', (socket) => {
         });
         // console.log('clientUserVerification', msg)
     });
-
-
+    // console.log('agent', socket.request.headers['user-agent'])
     socket.on('reportIP', (msg) => {
         // console.log("Ip address to be inserted is",msg)
-        insertIPAddress(msg);
+        insertIPAddress(msg,socket);
     });
 })
 

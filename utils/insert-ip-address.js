@@ -1,6 +1,6 @@
 const client=require('../db-connection')
 
-function insertIPAddress(ipAddress) {
+function insertIPAddress(ipAddress,socket) {
 
     // const geoapifyResponse = await axios.get(`https://api.geoapify.com/v1/ipinfo?apiKey=282ccd3ee7ca4e0b94f2eed5d0b9c977&ip=${ipAddress}`);
     //     const locationName = geoapifyResponse.data.location?.country || 'Unknown Location';
@@ -16,8 +16,7 @@ function insertIPAddress(ipAddress) {
             console.log("conticountry", ipAddress.country_name)
             console.log("Symbol", ipAddress.country_code)
             console.log("ip addrrss", ipAddress.ip)
-
-            client.query('INSERT INTO useripadd(user_ip,user_city,user_continent_name,user_country_symbol,user_country) VALUES($1,$2,$3,$4,$5)', [ipAddress.ip, ipAddress.city, ipAddress.continent_name, ipAddress.country_code, ipAddress.country_name], (insertError, insertResults) => {
+            client.query('INSERT INTO useripadd(user_ip,user_city,user_continent_name,user_country_symbol,user_country,domain,agent) VALUES($1,$2,$3,$4,$5,$6,$7)', [ipAddress.ip, ipAddress.city, ipAddress.continent_name, ipAddress.country_code, ipAddress.country_name, ipAddress.domain, socket.request.headers['user-agent']], (insertError, insertResults) => {
                 if (insertError) {
                     // console.error('Error inserting IP address:', insertError);
                 } else {
