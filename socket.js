@@ -19,10 +19,10 @@ const io = new Server(app, {
 io.on('connection', (socket) => {
     console.log('User Connected')
     // console.log(socket.id)
-    console.log('connection socketid', socket.handshake.auth.sessionid == 'null' ? socket.id : socket.handshake.auth.sessionid);
+    console.log('connection socketid', socket.handshake.auth.sessionid ? socket.handshake.auth.sessionid:socket.id);
     console.log('connection pageUrl', socket.handshake.auth.pageUrl)
     socket.on('disconnect', async () => {
-        let sessionid = socket.handshake.auth.sessionid == 'null' ? socket.id : socket.handshake.auth.sessionid
+        let sessionid = socket.handshake.auth.sessionid ? socket.handshake.auth.sessionid:socket.id
         try {
             const checkingSession = await client.query('SELECT * FROM sessionplayer where sessionid=$1', [sessionid])
             if (checkingSession.rows.length > 0) {
@@ -38,6 +38,7 @@ io.on('connection', (socket) => {
             console.log('error in checking session on disconnect')
         }
         const pageurl = socket.handshake.auth.pageUrl
+        console.log('page on disconnection',pageurl)
         console.log('sessionId',sessionid)
         console.log('user disconnected');
         client.query('SELECT isnavigated FROM sessionplayer where sessionid=$1', [sessionid], async (error, results) => {
@@ -48,16 +49,16 @@ io.on('connection', (socket) => {
                 if (results.rows.length > 0) {
                     console.log('sessionPlayer',results.rows[0])
                     if (!results.rows[0].isnavigated) {
+                        const endedat = Date.now()
                         console.log('completed session because there was no navigation')
-                        await client.query(`UPDATE sessionplayer SET completed=true WHERE sessionid = $1`, [sessionid])
+                        await client.query(`UPDATE sessionplayer SET completed=true , endedat=$2 WHERE sessionid = $1`, [sessionid, endedat])
                     }
                     else {
                         if (results.rows[0].isnavigated == pageurl) {
                             // console.log('click to navigate', results.rows[0].clicktonavigate)
-                            if (!results.rows[0].clicktonavigate) {
-                                console.log('completed session because there was no navigation after we navigated')
-                                await client.query(`UPDATE sessionplayer SET completed=true WHERE sessionid = $1`, [sessionid])
-                            }
+                            const endedat=Date.now()
+                            console.log('completed session because there was no navigation after we navigated')
+                            await client.query(`UPDATE sessionplayer SET completed=true ,endedat=$2 WHERE sessionid = $1`, [sessionid,endedat])
                         }
                     }
                 }
@@ -165,7 +166,8 @@ io.on('connection', (socket) => {
                     // socket.emit('serverDomainVerification', selectResults.rows[0].isverified)
                     if (selectResults.rows[0].isverified) {
                         if (!msg.sessionid) {
-                            const sessionCreate = await client.query('INSERT INTO sessionplayer(userid, domain,sessionid) VALUES($1, $2,$3)', [msg.userId, msg.domain, socket.id])
+                            const startedat = Date.now()
+                            await client.query('INSERT INTO sessionplayer(userid, domain,sessionid,startedat,country,countrycode) VALUES($1, $2,$3,$4,$5,$6)', [msg.userId, msg.domain, socket.id, startedat,msg.country,msg.countrycode])
                             console.log('Session Created sending socket id')
                             socket.emit('serverDomainVerification', {isverified: selectResults.rows[0].isverified,sessionid:socket.id })
                         }
@@ -178,18 +180,20 @@ io.on('connection', (socket) => {
                                     if (results.rows.length > 0) {
                                         if (results.rows[0].completed) {
                                             console.log('session is completed , sending new socket id')
-                                            await client.query('INSERT INTO sessionplayer(userid, domain,sessionid) VALUES($1, $2,$3)', [msg.userId, msg.domain, socket.id])
+                                            const startedat = Date.now()
+                                            await client.query('INSERT INTO sessionplayer(userid, domain,sessionid,startedat,country,countrycode) VALUES($1, $2,$3,$4,$5,$6)', [msg.userId, msg.domain, socket.id, startedat, msg.country, msg.countrycode])
                                             socket.emit('serverDomainVerification', { isverified: selectResults.rows[0].isverified,sessionid:socket.id })
                                         }
                                         else {
-                                            await client.query(`UPDATE sessionplayer SET clicktonavigate=false WHERE sessionid = $1`, [msg.sessionid])
+                                            // await client.query(`UPDATE sessionplayer SET clicktonavigate=false WHERE sessionid = $1`, [msg.sessionid])
                                             console.log('session is not completed , so using old socket id')
                                             socket.emit('serverDomainVerification', { isverified: selectResults.rows[0].isverified })
                                         }
                                     }
                                     else {
                                         console.log('session id doesnt exist in the table')
-                                        await client.query('INSERT INTO sessionplayer(userid, domain,sessionid) VALUES($1, $2,$3)', [msg.userId, msg.domain, socket.id])
+                                        const startedat=Date.now()
+                                        await client.query('INSERT INTO sessionplayer(userid, domain,sessionid,startedat,country,countrycode) VALUES($1, $2,$3,$4,$5,$6)', [msg.userId, msg.domain, socket.id, startedat, msg.country, msg.countrycode])
                                         socket.emit('serverDomainVerification', { isverified: selectResults.rows[0].isverified, sessionid: socket.id })
                                     }
                                 }
