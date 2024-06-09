@@ -39,7 +39,7 @@ io.on('connection', (socket) => {
         }
         const pageurl = socket.handshake.auth.pageUrl
         console.log('page on disconnection',pageurl)
-        console.log('sessionId',sessionid)
+        // console.log('sessionId',sessionid)
         console.log('user disconnected');
         client.query('SELECT isnavigated FROM sessionplayer where sessionid=$1', [sessionid], async (error, results) => {
             if (error) {
@@ -101,6 +101,7 @@ io.on('connection', (socket) => {
         let date = new Date()
         clickData.timeStamp = `${date.toLocaleTimeString()}`
         clickData.Date = `${date.toLocaleDateString()}`
+        clickData.sessiontime=date.getTime()
         if (msg.isNavigate) {
             const queryUpdate = `UPDATE sessionplayer SET isnavigated=$2  WHERE sessionid = $1`
             client.query(queryUpdate, [msg.sessionid, msg.isNavigate], (error, results) => {
@@ -211,7 +212,6 @@ io.on('connection', (socket) => {
         });
         // console.log('clientUserVerification', msg)
     });
-    // console.log('agent', socket.request.headers['user-agent'])
     socket.on('reportIP', (msg) => {
         // console.log("Ip address to be inserted is",msg)
         insertIPAddress(msg,socket);

@@ -13,8 +13,8 @@ function insertClickOrUpdateData(clickData) {
         // console.log('Records retrieved:', selectResults.rows);
         let findingIfExists = selectResults.rows.length > 0 ? true : false
         // console.log(findingIfExists)
-        const query = 'INSERT INTO client_interaction_data(x_cordinate, y_cordinate,action_type, element, user_ipaddress, date, time,count,userid,sessionid) VALUES($1, $2, $3, $4, $5 ,$6 ,$7,$8,$9,$10)';
-        const values = [clickData.x, clickData.y, clickData.type, clickData.element, clickData.ip, clickData.Date, clickData.timeStamp, 1, clickData.userId, clickData.sessionid];
+        const query = 'INSERT INTO client_interaction_data(x_cordinate, y_cordinate,action_type, element, user_ipaddress, date, time,count,userid,sessionid,sessiontime) VALUES($1, $2, $3, $4, $5 ,$6 ,$7,$8,$9,$10,$11)';
+        const values = [clickData.x, clickData.y, clickData.type, clickData.element, clickData.ip, clickData.Date, clickData.timeStamp, 1, clickData.userId, clickData.sessionid,clickData.sessiontime];
         if (!findingIfExists) {
             client.query(query, values, (error, results) => {
                 if (error) {
