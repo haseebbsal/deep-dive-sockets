@@ -80,6 +80,7 @@ io.on('connection', (socket) => {
         let date = new Date()
         mouseData.timeStamp = `${date.toLocaleTimeString()}`
         mouseData.Date = `${date.toLocaleDateString()}`
+        mouseData.sessiontime=date.getTime()
 
         insertClickOrUpdateData(mouseData);
     });
