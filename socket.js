@@ -82,7 +82,25 @@ io.on('connection', (socket) => {
         mouseData.Date = `${date.toLocaleDateString()}`
         mouseData.sessiontime=date.getTime()
 
-        insertClickOrUpdateData(mouseData);
+        insertClickOrUpdateData(mouseData,socket);
+    });
+
+
+    socket.on('on-scroll', (msg) => {
+        const scrollData = {
+            type: msg.type,
+            x: msg.x,
+            y: msg.y,
+            ip: msg.ip,
+            userId: msg.userId,
+            sessionid: msg.sessionid
+        };
+        let date = new Date()
+        scrollData.timeStamp = `${date.toLocaleTimeString()}`
+        scrollData.Date = `${date.toLocaleDateString()}`
+        scrollData.sessiontime = date.getTime()
+
+        insertClickOrUpdateData(scrollData,socket);
     });
 
 
@@ -115,7 +133,7 @@ io.on('connection', (socket) => {
         }
         // console.log(socket.handshake.auth.pageUrl)
        
-        insertClickOrUpdateData(clickData);
+        insertClickOrUpdateData(clickData,socket);
     });
 
    
