@@ -4,7 +4,7 @@ function insertIPAddress(ipAddress,socket) {
 
     // const geoapifyResponse = await axios.get(`https://api.geoapify.com/v1/ipinfo?apiKey=282ccd3ee7ca4e0b94f2eed5d0b9c977&ip=${ipAddress}`);
     //     const locationName = geoapifyResponse.data.location?.country || 'Unknown Location';
-    client.query('SELECT * FROM useripadd WHERE user_ip = $1', [ipAddress.ip], (selectError, selectResults) => {
+    client.query('SELECT * FROM useripadd WHERE user_ip = $1 and domain=$2', [ipAddress.ip,ipAddress.domain], (selectError, selectResults) => {
         if (selectError) {
             // console.error('Error querying the database:', selectError);
             return;
